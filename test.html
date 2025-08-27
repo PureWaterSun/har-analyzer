@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAR 分析器测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-area { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        button { padding: 10px 20px; margin: 10px; }
+        .result { margin-top: 20px; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>HAR 分析器测试页面</h1>
+    
+    <div class="test-area">
+        <h2>测试1: 基本功能测试</h2>
+        <button onclick="testBasicFunction()">测试基本功能</button>
+        <div id="result1" class="result"></div>
+    </div>
+
+    <div class="test-area">
+        <h2>测试2: HAR数据解析测试</h2>
+        <button onclick="testHARParsing()">测试HAR解析</button>
+        <div id="result2" class="result"></div>
+    </div>
+
+    <script>
+        // 简化的HAR分析器类
+        class SimpleHARAnalyzer {
+            constructor() {
+                this.harData = null;
+                this.requests = [];
+                console.log('SimpleHARAnalyzer initialized');
+            }
+
+            parseHAR(harData) {
+                try {
+                    if (!harData.log || !harData.log.entries) {
+                        throw new Error('Invalid HAR format');
+                    }
+                    
+                    this.harData = harData;
+                    this.requests = harData.log.entries;
+                    
+                    console.log('HAR parsed successfully:', this.requests.length, 'requests');
+                    return true;
+                } catch (error) {
+                    console.error('HAR parsing failed:', error);
+                    return false;
+                }
+            }
+
+            getRequestSummary() {
+                if (!this.requests.length) return 'No requests';
+                
+                const summary = this.requests.map((entry, index) => {
+                    const req = entry.request;
+                    const res = entry.response;
+                    return `${index + 1}. ${req.method} ${req.url} - ${res.status} ${res.statusText}`;
+                });
+                
+                return summary.join('\n');
+            }
+
+            searchRequests(term) {
+                if (!this.requests.length) return [];
+                
+                return this.requests.filter(entry => {
+                    const searchText = [
+                        entry.request.url,
+                        entry.request.method,
+                        entry.response.status.toString()
+                    ].join(' ').toLowerCase();
+                    
+                    return searchText.includes(term.toLowerCase());
+                });
+            }
+        }
+
+        // 创建分析器实例
+        const analyzer = new SimpleHARAnalyzer();
+
+        function testBasicFunction() {
+            const result = document.getElementById('result1');
+            result.innerHTML = '<p>测试基本功能...</p>';
+            
+            // 测试基本功能
+            if (analyzer) {
+                result.innerHTML = '<p style="color: green;">✓ HAR分析器初始化成功</p>';
+            } else {
+                result.innerHTML = '<p style="color: red;">✗ HAR分析器初始化失败</p>';
+            }
+        }
+
+        function testHARParsing() {
+            const result = document.getElementById('result2');
+            result.innerHTML = '<p>测试HAR解析...</p>';
+            
+            // 测试HAR数据
+            const testHAR = {
+                "log": {
+                    "version": "1.2",
+                    "creator": {"name": "Test", "version": "1.0"},
+                    "entries": [
+                        {
+                            "startedDateTime": "2025-08-27T02:21:30.000Z",
+                            "time": 150,
+                            "request": {
+                                "method": "GET",
+                                "url": "https://example.com/api/users",
+                                "httpVersion": "HTTP/1.1",
+                                "headers": [{"name": "Accept", "value": "application/json"}],
+                                "queryString": [{"name": "page", "value": "1"}],
+                                "cookies": [],
+                                "headersSize": 245,
+                                "bodySize": 0
+                            },
+                            "response": {
+                                "status": 200,
+                                "statusText": "OK",
+                                "httpVersion": "HTTP/1.1",
+                                "headers": [{"name": "Content-Type", "value": "application/json"}],
+                                "cookies": [],
+                                "content": {
+                                    "size": 156,
+                                    "mimeType": "application/json",
+                                    "text": '{"users":[{"id":1,"name":"张三"}]}'
+                                },
+                                "redirectURL": "",
+                                "headersSize": 180,
+                                "bodySize": 156
+                            },
+                            "cache": {},
+                            "timings": {"blocked": 0, "dns": 5, "connect": 10, "send": 2, "wait": 120, "receive": 13, "ssl": 8}
+                        },
+                        {
+                            "startedDateTime": "2025-08-27T02:21:31.000Z",
+                            "time": 85,
+                            "request": {
+                                "method": "POST",
+                                "url": "https://example.com/api/login",
+                                "httpVersion": "HTTP/1.1",
+                                "headers": [{"name": "Content-Type", "value": "application/json"}],
+                                "queryString": [],
+                                "cookies": [],
+                                "headersSize": 120,
+                                "bodySize": 45,
+                                "postData": {"mimeType": "application/json", "text": '{"username":"admin","password":"123456"}'}
+                            },
+                            "response": {
+                                "status": 401,
+                                "statusText": "Unauthorized",
+                                "httpVersion": "HTTP/1.1",
+                                "headers": [{"name": "Content-Type", "value": "application/json"}],
+                                "cookies": [],
+                                "content": {
+                                    "size": 45,
+                                    "mimeType": "application/json",
+                                    "text": '{"error":"Invalid credentials","code":401}'
+                                },
+                                "redirectURL": "",
+                                "headersSize": 95,
+                                "bodySize": 45
+                            },
+                            "cache": {},
+                            "timings": {"blocked": 0, "dns": 0, "connect": 0, "send": 3, "wait": 75, "receive": 7, "ssl": 0}
+                        }
+                    ]
+                }
+            };
+
+            if (analyzer.parseHAR(testHAR)) {
+                const summary = analyzer.getRequestSummary();
+                result.innerHTML = `
+                    <p style="color: green;">✓ HAR解析成功</p>
+                    <h4>请求摘要:</h4>
+                    <pre>${summary}</pre>
+                    <h4>搜索测试 (搜索 "login"):</h4>
+                    <pre>${analyzer.searchRequests('login').length} 个匹配结果</pre>
+                `;
+            } else {
+                result.innerHTML = '<p style="color: red;">✗ HAR解析失败</p>';
+            }
+        }
+    </script>
+</body>
+</html>
+

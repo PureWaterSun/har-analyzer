@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAR 分析器 - 离线HTTP存档文件分析工具</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <i class="fas fa-chart-line"></i>
+                    HAR 分析器
+                </h1>
+                <p class="app-subtitle">离线HTTP存档文件分析工具</p>
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 文件上传区域 -->
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h3>上传HAR文件</h3>
+                    <p>拖拽HAR文件到此处，或点击选择文件</p>
+                    <input type="file" id="fileInput" accept=".har,.json" hidden>
+                    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-folder-open"></i>
+                        选择文件
+                    </button>
+                </div>
+            </div>
+
+            <!-- 分析界面 -->
+            <div class="analyzer-section" id="analyzerSection" style="display: none;">
+                <!-- 工具栏 -->
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <div class="file-info">
+                            <span class="file-name" id="fileName">未选择文件</span>
+                            <span class="request-count" id="requestCount">0 个请求</span>
+                        </div>
+                    </div>
+                    <div class="toolbar-right">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput" placeholder="搜索URL、内容或响应...">
+                        </div>
+                        <div class="filter-dropdown">
+                            <button class="filter-btn" id="filterBtn">
+                                <i class="fas fa-filter"></i>
+                                筛选
+                            </button>
+                            <div class="filter-menu" id="filterMenu">
+                                <div class="filter-group">
+                                    <label>请求方法:</label>
+                                    <div class="filter-options">
+                                        <label><input type="checkbox" value="GET" checked> GET</label>
+                                        <label><input type="checkbox" value="POST" checked> POST</label>
+                                        <label><input type="checkbox" value="PUT" checked> PUT</label>
+                                        <label><input type="checkbox" value="DELETE" checked> DELETE</label>
+                                        <label><input type="checkbox" value="PATCH" checked> PATCH</label>
+                                    </div>
+                                </div>
+                                <div class="filter-group">
+                                    <label>状态码:</label>
+                                    <div class="filter-options">
+                                        <label><input type="checkbox" value="2xx" checked> 2xx 成功</label>
+                                        <label><input type="checkbox" value="3xx" checked> 3xx 重定向</label>
+                                        <label><input type="checkbox" value="4xx" checked> 4xx 客户端错误</label>
+                                        <label><input type="checkbox" value="5xx" checked> 5xx 服务器错误</label>
+                                    </div>
+                                </div>
+                                <div class="filter-group">
+                                    <label>内容类型:</label>
+                                    <div class="filter-options">
+                                        <label><input type="checkbox" value="html" checked> HTML</label>
+                                        <label><input type="checkbox" value="css" checked> CSS</label>
+                                        <label><input type="checkbox" value="js" checked> JavaScript</label>
+                                        <label><input type="checkbox" value="json" checked> JSON</label>
+                                        <label><input type="checkbox" value="image" checked> 图片</label>
+                                        <label><input type="checkbox" value="other" checked> 其他</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="clear-btn" id="clearBtn">
+                            <i class="fas fa-trash"></i>
+                            清除
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 内容区域 -->
+                <div class="content-area">
+                    <!-- 请求列表 -->
+                    <div class="requests-panel">
+                        <div class="panel-header">
+                            <h3>请求列表</h3>
+                            <div class="panel-controls">
+                                <button class="sort-btn" id="sortBtn">
+                                    <i class="fas fa-sort"></i>
+                                    排序
+                                </button>
+                            </div>
+                        </div>
+                        <div class="requests-list" id="requestsList">
+                            <!-- 请求项将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 详情面板 -->
+                    <div class="details-panel">
+                        <div class="panel-header">
+                            <h3>请求详情</h3>
+                            <button class="close-details" id="closeDetails">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="details-content" id="detailsContent">
+                            <div class="no-selection">
+                                <i class="fas fa-mouse-pointer"></i>
+                                <p>选择一个请求查看详细信息</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 加载指示器 -->
+        <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>正在解析HAR文件...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
